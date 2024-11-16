@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <h1>Welcome to RESITH</h1>
+    <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="EOG Logo" class="logo">
+    
+    <h2>Upcoming Week Reservations</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Time Slot</th>
+                <th>Player 1</th>
+                <th>Player 2</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.day.strftime('%A, %d %B %Y') }}</td>
+                    <td>{{ booking.time_slot }}</td>
+                    <td>{{ booking.email1 }}</td>
+                    <td>{{ booking.email2 }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

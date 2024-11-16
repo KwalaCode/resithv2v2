@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel{% endblock %}
+
+{% block content %}
+    <h1>Admin Panel</h1>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.email.label }}
+            {{ form.email() }}
+        </div>
+        <div>
+            {{ form.action.label }}
+            {{ form.action() }}
+        </div>
+        {{ form.submit() }}
+    </form>
+
+    <h2>All Users</h2>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Team Status</th>
+                <th>Blocked Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        <span id="status-{{ user.id }}">
+                            {% if user.is_team %}Team User{% else %}Regular User{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <span id="blocked-status-{{ user.id }}">
+                            {% if user.is_blocked %}Blocked{% else %}Not Blocked{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <button onclick="toggleTeamStatus('{{ user.id }}')">
+                            {% if user.is_team %}Remove from Team{% else %}Add to Team{% endif %}
+                        </button>
+                        <button onclick="toggleBlockedStatus('{{ user.id }}')">
+                            {% if user.is_blocked %}Unblock{% else %}Block{% endif %}
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        function toggleTeamStatus(userId) {
+            fetch('/toggle_team_status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_id: userId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const statusSpan = document.getElementById(`status-${userId}`);
+                    const button = statusSpan.parentElement.nextElementSibling.nextElementSibling.querySelector('button:first-child');
+                    if (data.is_team) {
+                        statusSpan.textContent = 'Team User';
+                        button.textContent = 'Remove from Team';
+                    } else {
+                        statusSpan.textContent = 'Regular User';
+                        button.textContent = 'Add to Team';
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function toggleBlockedStatus(userId) {
+            fetch('/toggle_blocked_status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_id: userId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const statusSpan = document.getElementById(`blocked-status-${userId}`);
+                    const button = statusSpan.parentElement.nextElementSibling.querySelector('button:last-child');
+                    if (data.is_blocked) {
+                        statusSpan.textContent = 'Blocked';
+                        button.textContent = 'Unblock';
+                    } else {
+                        statusSpan.textContent = 'Not Blocked';
+                        button.textContent = 'Block';
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+{% endblock %}

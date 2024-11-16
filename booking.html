@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Book a Game{% endblock %}
+
+{% block content %}
+    <h1>Book a Game</h1>
+    <form method="POST">
+        {{ form.csrf_token }}
+        {{ form.name }}
+        {{ form.hidden_tag() }}
+        <div>
+            <label for="day">Day:</label>
+            <select name="day" id="day" required>
+                {% for day in available_days %}
+                    <option value="{{ day.strftime('%Y-%m-%d') }}">{{ day.strftime('%A, %d %B %Y') }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            {{ form.time_slot.label }}
+            {{ form.time_slot() }}
+        </div>
+        <div>
+            {{ form.opponent.label }}
+            {{ form.opponent() }}
+        </div>
+        {{ form.submit() }}
+        
+    </form>
+
+    <script>
+        function updateAvailableSlots() {
+            let daySelect = document.getElementById('day');
+            fetch('/get_available_slots?day=' + daySelect.value)
+                .then(response => response.json())
+                .then(data => {
+                    let timeSlotSelect = document.getElementById('time_slot');
+                    timeSlotSelect.innerHTML = '';
+                    data.forEach(slot => {
+                        let option = document.createElement('option');
+                        option.value = slot;
+                        option.textContent = slot;
+                        timeSlotSelect.appendChild(option);
+                    });
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAvailableSlots();
+        });
+
+        document.getElementById('day').addEventListener('change', updateAvailableSlots);
+    </script>
+{% endblock %}
